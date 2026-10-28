@@ -6,20 +6,32 @@
 
 ## Chuẩn bị môi trường
 
-Python 3.11:
+Không cần Docker. Từ thư mục **backend**, đã chạy `npm run setup`:
 
 ```bash
-pip install -r backend/requirements.txt
-pip install -r ai/requirements.txt
+npm run setup:ai
 ```
 
-Hoặc build bản Docker có PyTorch CPU:
+Lệnh này cài PyTorch CPU vào đúng `.venv` của app; không cần kích hoạt venv. Nếu cần CUDA, cài torch/torchvision phù hợp từ bộ cài chính thức; bộ mặc định ở đây là CPU.
+
+Các lệnh npm gõ trong **backend**, mọi đường dẫn được tính từ **gốc dự án**:
+
+```powershell
+npm run data:prepare -- data/fer2013.csv --output data/datasets/fer2013
+npm run data:audit -- data/datasets/fer2013 --output data/fer2013-audit.json
+npm run train -- --dataset data/datasets/fer2013 --model mobilenet_v3_small --output ai/runs/mobile-v1 --epochs 30 --batch-size 16
+npm run evaluate -- --dataset data/datasets/fer2013 --model ai/runs/mobile-v1/model.pt --output ai/runs/mobile-v1/test.json
+```
+
+Các lệnh Python bên dưới chạy tại gốc dự án với venv đã kích hoạt. Có thể dùng `.venv/Scripts/python.exe` (Windows) hoặc `.venv/bin/python` (macOS/Linux) thay cho `python` nếu không muốn kích hoạt venv.
+
+Docker là tùy chọn:
 
 ```bash
 docker compose -f compose.yaml -f compose.research.yaml up -d --build --wait
 ```
 
-Bản mở rộng mount `data/datasets` (đọc), `ai/runs` (ghi) từ máy. CPU build phù hợp chạy thử, huấn luyện đầy đủ nên dùng GPU/Colab và phiên bản torch/torchvision CUDA tương thích. Không tự động tải dataset thay người dùng vì điều kiện truy cập/giấy phép khác nhau.
+Bản Docker mở rộng mount `data/datasets` (đọc), `ai/runs` (ghi). Local dùng trực tiếp các thư mục này. Không tự tải dataset vì điều kiện truy cập/giấy phép cần được người dùng đáp ứng.
 
 ## Dataset
 
@@ -46,6 +58,16 @@ Audit đọc ảnh RGB, kiểm tra lớp trống/ảnh lỗi, thống kê nhãn 
 Không dùng bộ ảnh ví dụ `tests/assets` để tính chất lượng nghiên cứu. Đó là dữ liệu kiểm thử phần mềm.
 
 ## Huấn luyện ba mô hình
+
+Trong backend:
+
+```powershell
+npm run train -- --dataset data/datasets/fer2013 --model cnn --output ai/runs/cnn-v1 --epochs 30 --batch-size 16
+npm run train -- --dataset data/datasets/fer2013 --model resnet18 --output ai/runs/resnet-v1 --epochs 30 --batch-size 16
+npm run train -- --dataset data/datasets/fer2013 --model mobilenet_v3_small --output ai/runs/mobile-v1 --epochs 30 --batch-size 16
+```
+
+Hoặc Python tại thư mục gốc với venv đã kích hoạt:
 
 ```bash
 python -m ai.train --dataset data/datasets/fer2013 --model cnn --output ai/runs/cnn-v1 --epochs 30
@@ -103,7 +125,7 @@ docker compose cp models/mobile-v1.test.json app:/app/models/mobile-v1.test.json
 
 Ở Mô hình AI, nhập tên, version và hai tên file. Backend đối chiếu SHA-256, split=test, thứ tự nhãn và metric hợp lệ. Người phụ trách xem xét, phê duyệt rồi kích hoạt. Smoke-forward phải có đúng 7 đầu ra. Không tự kích hoạt model sau training. Đổi về model cũ bằng cùng nút Kích hoạt / khôi phục. Tác vụ video đang chạy chặn thay model; phiên webcam phát hiện thay model sẽ kết thúc.
 
-Model TorchScript cần bản Docker nghiên cứu hoặc host có PyTorch. Chỉ nạp file từ nguồn tin cậy. Volume model được khởi tạo từ image; copy model mới vào app bằng `docker compose cp` như trên trước khi đăng ký. File được giữ khi app container tạo lại.
+Local chỉ cần `npm run setup:ai` trong backend và copy model/báo cáo vào `models/`; không cần lệnh Docker. Nếu dùng Docker thì cần bản nghiên cứu và `docker compose cp` như trên. Chỉ nạp file từ nguồn tin cậy.
 
 ## Điều còn phải đo để bảo vệ đồ án
 

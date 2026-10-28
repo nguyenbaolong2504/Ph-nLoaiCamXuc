@@ -1,4 +1,4 @@
-"""Local research jobs. Heavy dependencies are opt-in via compose.research.yaml."""
+"""Local research jobs. Install optional dependencies with npm run setup:ai."""
 from concurrent.futures import ThreadPoolExecutor
 import importlib.util
 import json
@@ -53,7 +53,7 @@ def audit_dataset(did:str,user=Depends(current_user)):
     record=db.datasets.find_one({"id":did})
     if not record:raise HTTPException(404,"Không tìm thấy dataset.")
     if importlib.util.find_spec("torch") is None:
-        raise HTTPException(409,"Bật bộ nghiên cứu: docker compose -f compose.yaml -f compose.research.yaml up -d --build")
+        raise HTTPException(409,"Trong thư mục backend, chạy npm run setup:ai rồi khởi động lại npm run dev.")
     db.datasets.update_one({"id":did},{"$set":{"status":"auditing"}})
     executor.submit(dataset_audit,did,ROOT/"data/datasets"/record["path"])
     return {"ok":True}
@@ -81,7 +81,7 @@ def train_run(rid,record,body):
 def train(body:Training,user=Depends(current_user)):
     require_role(user,"engineer")
     if importlib.util.find_spec("torch") is None:
-        raise HTTPException(409,"Bật compose.research.yaml để cài PyTorch cho huấn luyện.")
+        raise HTTPException(409,"Trong thư mục backend, chạy npm run setup:ai để cài PyTorch cho huấn luyện, rồi khởi động lại backend.")
     record=db.datasets.find_one({"id":body.dataset_id,"status":"ready"})
     if not record:raise HTTPException(400,"Dataset cần vượt kiểm tra chất lượng trước khi train.")
     if db.training_runs.count_documents({"status":{"$in":["QUEUED","PROCESSING"]}}):

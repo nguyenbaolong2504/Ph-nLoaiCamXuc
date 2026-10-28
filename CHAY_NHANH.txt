@@ -1,18 +1,34 @@
-EXPRESSION LAB - PHAN LOAI BIEU CAM KHUON MAT
+EXPRESSION LAB - CHAY LOCAL, KHONG CAN DOCKER
 
-1. Cai va mo Docker Desktop (Linux containers).
-2. Can it nhat 3-5 GB trong tren o C cho lan build dau.
-3. Nhan dup RUN.bat. Cho tai thu vien va build.
-4. Trinh duyet mo http://localhost:8010
-5. Dang ky tai khoan hoac dung tai khoan quan tri in trong cua so khoi dong.
-6. Dong y xu ly hinh anh, chon anh/video/webcam va bat dau.
-7. Nhan STOP.bat de dung, du lieu MongoDB van duoc giu.
+Can Node.js co npm, Python 3.11, MongoDB Server local hoac URI Atlas.
 
-Neu Docker bao read-only sau khi o C day: don dung luong va khoi dong lai Docker Desktop.
-Neu cong 8010 ban: sua APP_PORT trong .env thanh 8011 roi chay lai.
+CAI MOT LAN (tu thu muc goc):
+  cd backend
+  npm install
+  npm run setup
+  Mo .env o thu muc goc va kiem tra MONGO_URI.
 
-Ban nay co model pretrained that de chay ngay.
-Muon lam phan nghien cuu FER2013 / train 3 model: xem docs/NGHIEN_CUU.md.
-Chua co ket qua accuracy / F1 nghien cuu khi chua train va test dataset that.
+TERMINAL BACKEND (tu thu muc goc):
+  cd backend
+  npm run dev
 
-Xem README.md de biet huong dan chi tiet va docs/KIEM_THU.md de biet cac buoc da/chua xac minh.
+TERMINAL FRONTEND (tu thu muc goc):
+  cd frontend
+  npm install
+  npm start
+
+Mo http://127.0.0.1:5173
+API: http://127.0.0.1:8010/docs
+Nhan Ctrl+C trong moi terminal de dung.
+
+TRAIN (trong backend, moi duong dan tinh tu thu muc goc):
+  npm run setup:ai
+  npm run data:prepare -- data/fer2013.csv --output data/datasets/fer2013
+  npm run data:audit -- data/datasets/fer2013 --output data/fer2013-audit.json
+  npm run train -- --dataset data/datasets/fer2013 --model mobilenet_v3_small --output ai/runs/mobile-v1 --epochs 30 --batch-size 16
+  npm run evaluate -- --dataset data/datasets/fer2013 --model ai/runs/mobile-v1/model.pt --output ai/runs/mobile-v1/test.json
+
+Dataset da co train/val/test dung 7 nhan thi bo buoc data:prepare.
+Lan train tiep theo doi output thanh mobile-v2..., khong ghi de run cu.
+Chi can setup:ai khi train hoac dung model TorchScript custom.
+Xem README.md va docs/NGHIEN_CUU.md de biet chi tiet.

@@ -2,7 +2,7 @@
 .venv/
 __pycache__/
 *.pyc
-frontend/node_modules/
+node_modules/
 frontend/dist/
 models/*.onnx
 models/*.tflite

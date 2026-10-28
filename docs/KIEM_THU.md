@@ -2,6 +2,13 @@
 
 Ngày thực hiện: 28/10/2026.
 
+## Bổ sung chế độ npm local
+
+- Đã kiểm tra cú pháp Node bridge, Python runner, JSON package scripts và biến APP_PORT từ môi trường.
+- 4 kiểm thử subprocess thật đã pass: chuẩn bị dataset từ đường dẫn có dấu cách trong backend, kiểm tra path luôn tính từ gốc; truyền lỗi Python thành mã thoát khác 0; giữ nguyên `.env` có sẵn; chuyển `train --help` tới CLI PyTorch thật trong venv.
+- Không cài lại toàn bộ dependency hoặc chạy train dataset thật trong lần cập nhật này vì dung lượng máy còn hạn chế và chưa có dataset. Native startup với MongoDB và browser E2E vẫn cần xác minh trên máy đã cài đủ môi trường.
+- Frontend build ghi ở phần dưới là kết quả trước khi bổ sung npm scripts; chưa ghi nhận build mới sau thay đổi cấu hình Vite.
+
 ## Đã chạy thành công
 
 - Frontend: TypeScript type-check và Vite production build.
@@ -61,15 +68,17 @@ python -m unittest discover -s tests -p test_system.py -v
 
 ```powershell
 cd frontend
-pnpm install
-pnpm exec playwright test
+npm install
+# Kiem thu qua Vite: bat frontend va backend truoc
+$env:TEST_BASE_URL='http://127.0.0.1:5173'
+npm run test:e2e
 ```
 
 Dùng Chrome đã cài. Nếu không có Chrome, đổi `channel` trong config hoặc cài Chrome theo Playwright. Camera giả chỉ kiểm tra luồng phần mềm, không thay việc thử webcam thật.
 
 ## Tiêu chí cần xác minh tiếp
 
-- Chạy RUN.bat trên máy có tối thiểu 3–5 GB trống cho lần build; nếu Docker đã chuyển filesystem read-only, cần khởi động lại Docker Desktop sau khi giải phóng dung lượng.
+- Chạy `npm run setup`, bật MongoDB, mở `backend/npm run dev` và `frontend/npm start` trên máy có đủ dung lượng cho thư viện. Docker vẫn có thể kiểm thử riêng, không bắt buộc.
 - Đăng nhập admin, đổi password, kiểm tra user không có quyền admin.
 - Cho phép và thu hồi quyền camera thật; kiểm tra camera tắt sau stop/rời trang.
 - Upload video ở giới hạn dung lượng/thời lượng và thử hủy.

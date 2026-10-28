@@ -2,35 +2,91 @@
 
 Ứng dụng đồ án tiếng Việt: **React + TypeScript · FastAPI · MediaPipe · MongoDB**. Nhận diện 7 lớp biểu cảm từ ảnh, video và webcam; có đăng nhập, lưu lịch sử, thống kê, CSV, phản hồi, quyền riêng tư và quản trị.
 
-## Chạy dễ nhất trên Windows
+## Chạy local bằng terminal — không cần Docker
 
-1. Cài và mở [Docker Desktop](https://www.docker.com/products/docker-desktop/), dùng **Linux containers**.
-2. Giải nén dự án, nhấp đúp **`RUN.bat`**.
-3. Chờ lần đầu tải thư viện/model và build. Trình duyệt tự mở **http://localhost:8010**.
-4. Chọn **Đăng ký ngay** để tạo tài khoản. Tài khoản quản trị được in trong cửa sổ khởi động và ghi trong `.env`.
+Cài **Node.js 22/24 có npm**, **Python 3.11** (Windows chọn Add Python to PATH), và **MongoDB Community Server** hoặc dùng Atlas. MongoDB Compass là giao diện quản lý; dùng `mongodb://127.0.0.1:27017` vẫn cần MongoDB Server đang chạy.
 
-**Không cần cài riêng Python, Node hoặc MongoDB.** Lần đầu cần Internet, các lần sau dùng lại image và dữ liệu đã có. Có thể nhấp `RUN.bat` lại để cập nhật mã mới; `STOP.bat` để dừng và giữ dữ liệu.
+### 1. Cài backend một lần
 
-Tài khoản quản trị mặc định: `admin@expressionlab.com`; mật khẩu được tạo ngẫu nhiên trong `.env`. Đổi mật khẩu tại Cài đặt sau lần đăng nhập đầu. Mật khẩu `.env` chỉ khởi tạo tài khoản lần đầu, không ghi đè mật khẩu đã đổi trong database.
-
-## Chạy bằng lệnh
+Từ thư mục gốc dự án:
 
 ```powershell
-# Windows, không yêu cầu Python trên host
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start.ps1
+cd backend
+npm install
+npm run setup
 ```
 
-```bash
-# macOS / Linux
-sh start.sh
+`setup` tự tìm Python 3.11, tạo `.venv` ở gốc, cài thư viện Python, tạo `.env` nếu chưa có và tải model pretrained có kiểm tra SHA-256. Không cần kích hoạt venv. Backend vẫn dùng Python để chạy AI; npm khởi động đúng Python trong venv.
+
+Mở `.env` ở **thư mục gốc**, kiểm tra:
+
+```dotenv
+MONGO_URI=mongodb://127.0.0.1:27017
+MONGO_DB=expression_lab
+APP_PORT=8010
 ```
 
-Nếu đã có Python và muốn chạy thủ công:
+Nếu dùng Atlas, thay `MONGO_URI` bằng URI `mongodb+srv://...` của bạn, cấu hình database user và quyền truy cập mạng Atlas. `setup` giữ nguyên `.env` đã có; không đưa URI/mật khẩu vào Git.
 
-```bash
-python scripts/setup.py
-docker compose up -d --build --wait --wait-timeout 240
+### 2. Terminal backend
+
+```powershell
+cd backend
+npm run dev
 ```
+
+API: **http://127.0.0.1:8010**, Swagger: **http://127.0.0.1:8010/docs**. Backend reload khi sửa code. `npm start` chạy không reload. Khi thiếu model hoặc MongoDB không kết nối, terminal hướng dẫn cách xử lý.
+
+### 3. Terminal frontend
+
+```powershell
+cd frontend
+npm install
+npm start
+```
+
+Mở **http://127.0.0.1:5173**. `npm run dev` cũng dùng được. Frontend proxy API và WebSocket tới backend, đọc `APP_PORT` từ `.env` gốc. Nếu đổi port, restart cả hai terminal. Cổng frontend 5173 cố định để cookie, Origin và webcam hoạt động đúng.
+
+Đăng ký tài khoản ở giao diện. Tài khoản quản trị: `admin@expressionlab.com`, mật khẩu ngẫu nhiên trong `.env`; đổi sau lần đăng nhập đầu. `.env` chỉ khởi tạo tài khoản lần đầu, không ghi đè mật khẩu đã đổi trong database.
+
+Nhấn **Ctrl+C** trong mỗi terminal để dừng. Lần sau chỉ cần `npm run dev` và `npm start`; dữ liệu vẫn ở MongoDB.
+
+Nếu MongoDB đã cài nhưng chưa chạy dạng service, mở terminal riêng từ thư mục gốc (cần `mongod` trong PATH):
+
+```powershell
+New-Item -ItemType Directory -Force data/mongo
+mongod --dbpath ./data/mongo --bind_ip 127.0.0.1 --port 27017
+```
+
+Nếu MongoDB đã chạy dạng Windows Service thì không chạy thêm lệnh trên.
+
+## Lệnh train dataset
+
+Gõ các lệnh npm sau trong **backend**. Mọi đường dẫn dataset/output được tính từ **gốc dự án**.
+
+```powershell
+# Cài thêm PyTorch CPU và bộ nghiên cứu, một lần
+npm run setup:ai
+
+# Nếu dùng FER2013 CSV, đặt file ở data/fer2013.csv
+npm run data:prepare -- data/fer2013.csv --output data/datasets/fer2013
+npm run data:audit -- data/datasets/fer2013 --output data/fer2013-audit.json
+
+# Huấn luyện và đánh giá MobileNetV3-Small
+npm run train -- --dataset data/datasets/fer2013 --model mobilenet_v3_small --output ai/runs/mobile-v1 --epochs 30 --batch-size 16
+npm run evaluate -- --dataset data/datasets/fer2013 --model ai/runs/mobile-v1/model.pt --output ai/runs/mobile-v1/test.json
+```
+
+Dataset đã chia `train/val/test` với đủ nhãn `angry, disgust, fear, happy, neutral, sad, surprise` thì bỏ `data:prepare` và trỏ `--dataset` tới thư mục đó. Dataset chỉ có `train/test` cần tách validation từ train trước; không dùng test chọn model. Xem báo cáo audit nếu có ảnh lỗi hoặc ảnh trùng giữa split.
+
+Hai mô hình đối chứng:
+
+```powershell
+npm run train -- --dataset data/datasets/fer2013 --model cnn --output ai/runs/cnn-v1 --epochs 30 --batch-size 16
+npm run train -- --dataset data/datasets/fer2013 --model resnet18 --output ai/runs/resnet-v1 --epochs 30 --batch-size 16
+```
+
+Kết quả: `ai/runs/<version>/model.pt`, checkpoint, config và history. Không ghi đè run cũ; lần train tiếp theo đổi `mobile-v1` thành `mobile-v2`. Training CLI không cần MongoDB/backend chạy. Xem [hướng dẫn nghiên cứu](docs/NGHIEN_CUU.md) để lấy dữ liệu đúng nguồn và kích hoạt model sau khi train.
 
 ## Sử dụng
 
@@ -52,23 +108,27 @@ Ngưỡng mặc định 0.60 và margin 0.10 là cấu hình thử nghiệm. Cá
 - Face detection: **MediaPipe BlazeFace**.
 - Classifier sẵn có: **MobileFaceNet / Progressive Teacher của OpenCV Zoo**, Apache-2.0, 7 đầu ra.
 - Mã huấn luyện riêng: **CNN baseline, ResNet18, MobileNetV3-Small**, PyTorch.
-- Binary pretrained được kèm trong bản ZIP, có SHA-256 trong `models/manifest.json`. Nếu clone từ Git, Docker tự tải và kiểm tra.
+- Binary pretrained được kèm trong bản ZIP ban đầu, có SHA-256 trong `models/manifest.json`. Nếu clone Git, `npm run setup` tự tải và kiểm tra.
 - Không tự sinh nhãn khi model lỗi; `/api/health` trả trạng thái AI/MongoDB.
 
 **Chưa có kết quả nghiên cứu FER2013 của dự án.** Huấn luyện/đánh giá bộ dữ liệu thật là bước riêng và không được thay bằng kết quả smoke test. Đọc [hướng dẫn nghiên cứu](docs/NGHIEN_CUU.md) để thực hiện ba thí nghiệm.
 
 ## MongoDB
 
-MongoDB 8 chạy cùng Docker Compose, có xác thực, dữ liệu bền vững trong volume `expression-lab_mongo-data`. Không mở cổng MongoDB ra host. Các collection: `users`, `auth_sessions`, `sessions`, `jobs`, `feedback`, `consents`, `model_versions`, `datasets`, `training_runs`, `audit_logs`, `data_requests`, `system`.
+Local dùng MongoDB Community Server hoặc Atlas theo `MONGO_URI`; không cần Docker. Dữ liệu được giữ tại MongoDB của bạn. Các collection: `users`, `auth_sessions`, `sessions`, `jobs`, `feedback`, `consents`, `model_versions`, `datasets`, `training_runs`, `audit_logs`, `data_requests`, `system`.
 
 - Email unique; index chủ sở hữu + thời gian cho lịch sử.
 - TTL tự xóa phiên/kết quả/phản hồi sau 30 ngày, job tạm sau 1 giờ và phiên đăng nhập sau 7 ngày. TTL chạy bất đồng bộ; API lịch sử cũng lọc `expires_at`.
 - Kết quả được nhúng trong document phiên; xóa phiên sẽ xóa kết quả nhúng và feedback.
 - Mật khẩu hash bằng scrypt; token phiên ngẫu nhiên 256 bit, database chỉ lưu hash; cookie HttpOnly, SameSite=Strict, logout thu hồi token.
 
-MongoDB Atlas cũng dùng được: thay `MONGO_URI` trong `compose.yaml` bằng `${MONGO_URI}` rồi đặt URI trong `.env`; bỏ `depends_on` của app nếu không dùng Mongo local. Không đưa URI/mật khẩu vào Git.
+Atlas: chỉ cần đặt URI trong `.env` khi chạy terminal; không phải sửa Compose. Không đưa URI/mật khẩu vào Git.
 
-## Lệnh vận hành
+## Docker là tùy chọn
+
+Nếu chạy terminal theo hướng dẫn trên thì không cần mở Docker hay chạy `RUN.bat`. Các file Docker được giữ để có thể dùng sau; xem [hướng dẫn riêng](docs/DOCKER.md).
+
+Các lệnh dưới đây chỉ dành cho chế độ Docker:
 
 ```bash
 docker compose ps
@@ -80,48 +140,44 @@ docker compose down            # gỡ container, giữ volume dữ liệu
 
 Không dùng `docker compose down -v` nếu cần giữ dữ liệu; `-v` xóa volume MongoDB.
 
-- Web: http://localhost:8010
-- Swagger API: http://localhost:8010/docs
-- Health: http://localhost:8010/api/health
+- Frontend local: http://127.0.0.1:5173
+- Swagger API local: http://127.0.0.1:8010/docs
+- Health API: http://127.0.0.1:8010/api/health
+- Docker phục vụ giao diện tại http://localhost:8010
 
-**Cổng 8010 bị chiếm:** đổi `APP_PORT=8011` trong `.env`, chạy lại `RUN.bat`, mở http://localhost:8011. Launcher tự đọc cổng. Cổng 8010 được chọn để tránh backend khác đang dùng 8000 trên máy hiện tại. Không sửa `MONGO_PASSWORD` sau khi database đã khởi tạo nếu chưa cập nhật mật khẩu MongoDB tương ứng.
+**Cổng 8010 bị chiếm:** đổi `APP_PORT=8011` trong `.env`, restart backend/frontend. Giao diện local vẫn ở 5173. Nếu dùng Docker thì chạy lại `RUN.bat` và mở localhost:8011. Không sửa `MONGO_PASSWORD` của MongoDB Docker đã khởi tạo nếu chưa cập nhật mật khẩu MongoDB tương ứng.
 
 **Camera không mở:** dùng localhost hoặc HTTPS; cấp quyền camera và đóng ứng dụng đang chiếm camera. Truy cập qua IP LAN HTTP không bảo đảm quyền webcam.
 
-**Ứng dụng chưa healthy:** xem log. Kiểm tra Docker còn RAM/dung lượng, Internet lần đầu và thư mục `models`. Bản local gợi ý RAM 8 GB, trống 5 GB, CPU x64. Huấn luyện cần thêm tài nguyên.
+**Ứng dụng chưa healthy:** xem terminal backend, kiểm tra MongoDB, Internet lúc setup và model. Venv/PyTorch vẫn cần dung lượng dù không dùng Docker; có thể đặt dự án ở ổ D trước khi cài. Chỉ cần `setup:ai` nếu train hoặc nạp TorchScript custom.
 
 ## Phát triển không qua Docker
 
-Python 3.11, Node 24, pnpm 12.6, MongoDB đang hoạt động:
+Các lệnh npm ở trên dùng được mà không kích hoạt venv. Nếu muốn chạy Python trực tiếp, từ thư mục gốc trên Windows:
 
 ```bash
-python -m venv .venv
-# Windows: .venv\Scripts\activate
-pip install -r backend/requirements.txt
-python scripts/download_models.py
-# Tạo .env từ .env.example, đặt MONGO_URI trỏ đến MongoDB thật.
-cd frontend
-pnpm install
-pnpm dev
+.\.venv\Scripts\python.exe scripts/run_backend.py --reload
 ```
 
-Terminal thứ hai ở thư mục gốc:
+Trên macOS/Linux:
 
 ```bash
-uvicorn app.main:app --app-dir backend --host 127.0.0.1 --port 8000
+.venv/bin/python scripts/run_backend.py --reload
 ```
 
-Vite http://localhost:5173 proxy `/api` và `/ws` tới backend. `pnpm build` tạo frontend production, FastAPI tự phục vụ thư mục `frontend/dist`. Không chạy nhiều worker Uvicorn ở bản này: hàng đợi video/training và model đang dùng chung một tiến trình.
+`npm run build` trong frontend tạo bundle production; FastAPI tự phục vụ `frontend/dist` nếu có. Không chạy nhiều worker Uvicorn ở bản này: hàng đợi video/training và model dùng chung một tiến trình.
 
 ## Kiểm thử
 
 Sau khi ứng dụng healthy:
 
 ```bash
-python -m pip install httpx websockets
-python -m unittest discover -s tests -p "test_*.py" -v
+.\.venv\Scripts\python.exe -m pip install httpx websockets
+.\.venv\Scripts\python.exe -m unittest discover -s tests -p "test_*.py" -v
 cd frontend
-pnpm exec playwright test
+# Bat ca frontend/backend de kiem thu qua Vite:
+$env:TEST_BASE_URL='http://127.0.0.1:5173'
+npm run test:e2e
 ```
 
 Kiểm thử API dùng MongoDB thật, inference thật và video tạo từ ảnh mẫu NASA. E2E dùng camera giả của Chromium để kiểm tra luồng webcam; cần kiểm tra thêm với webcam vật lý trên máy trình diễn. Xem `docs/KIEM_THU.md` và `docs/PHAM_VI.md`.

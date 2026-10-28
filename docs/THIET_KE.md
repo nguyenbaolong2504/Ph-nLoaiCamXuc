@@ -22,7 +22,7 @@ flowchart LR
   M -->|Đăng ký, phê duyệt, kích hoạt| AI
 ```
 
-Frontend được build một lần và FastAPI phục vụ tĩnh. Compose chỉ có app và MongoDB để giảm số bước khởi động. Hàng đợi video một worker trong app; training là tiến trình con riêng khi bật gói nghiên cứu. Đây là kiến trúc cho local/đồ án, chưa phải cụm xử lý phân tán nhiều worker.
+Chạy local: frontend Vite tại 5173 (`npm start`), backend FastAPI tại APP_PORT mặc định 8010 (`npm run dev`), MongoDB Community Server hoặc Atlas theo MONGO_URI. npm gọi đúng Python 3.11 trong `.venv`, không cần Docker hay kích hoạt venv thủ công. Khi build production, FastAPI phục vụ frontend tĩnh. Docker Compose app/MongoDB là tùy chọn. Hàng đợi video một worker; training là tiến trình con khi đã cài bộ nghiên cứu. Đây là kiến trúc local/đồ án, chưa phải cụm xử lý phân tán.
 
 ## Actors và quyền
 
