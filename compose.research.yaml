@@ -1,0 +1,8 @@
+services:
+  app:
+    build:
+      args:
+        INCLUDE_TRAINING: "1"
+    volumes:
+      - ./data/datasets:/app/data/datasets:ro
+      - ./ai/runs:/app/ai/runs

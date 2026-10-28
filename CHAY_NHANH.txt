@@ -1,0 +1,18 @@
+EXPRESSION LAB - PHAN LOAI BIEU CAM KHUON MAT
+
+1. Cai va mo Docker Desktop (Linux containers).
+2. Can it nhat 3-5 GB trong tren o C cho lan build dau.
+3. Nhan dup RUN.bat. Cho tai thu vien va build.
+4. Trinh duyet mo http://localhost:8010
+5. Dang ky tai khoan hoac dung tai khoan quan tri in trong cua so khoi dong.
+6. Dong y xu ly hinh anh, chon anh/video/webcam va bat dau.
+7. Nhan STOP.bat de dung, du lieu MongoDB van duoc giu.
+
+Neu Docker bao read-only sau khi o C day: don dung luong va khoi dong lai Docker Desktop.
+Neu cong 8010 ban: sua APP_PORT trong .env thanh 8011 roi chay lai.
+
+Ban nay co model pretrained that de chay ngay.
+Muon lam phan nghien cuu FER2013 / train 3 model: xem docs/NGHIEN_CUU.md.
+Chua co ket qua accuracy / F1 nghien cuu khi chua train va test dataset that.
+
+Xem README.md de biet huong dan chi tiet va docs/KIEM_THU.md de biet cac buoc da/chua xac minh.

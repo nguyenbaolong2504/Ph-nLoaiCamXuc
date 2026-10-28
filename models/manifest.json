@@ -1,0 +1,12 @@
+{
+  "expression.onnx": {
+    "url": "https://media.githubusercontent.com/media/opencv/opencv_zoo/48b10fa505aeb51fbd127fc60a5c660040e823b7/models/facial_expression_recognition/facial_expression_recognition_mobilefacenet_2022july.onnx",
+    "sha256": "4f61307602fc089ce20488a31d4e4614e3c9753a7d6c41578c854858b183e1a9",
+    "bytes": 4791892
+  },
+  "face_detector.tflite": {
+    "url": "https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/1/blaze_face_short_range.tflite",
+    "sha256": "b4578f35940bf5a1a655214a1cce5cab13eba73c1297cd78e1a04c2380b0152f",
+    "bytes": 229746
+  }
+}

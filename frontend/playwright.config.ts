@@ -1,0 +1,2 @@
+import {defineConfig} from '@playwright/test';
+export default defineConfig({testDir:'./e2e',timeout:45000,workers:1,reporter:'list',use:{baseURL:process.env.TEST_BASE_URL||'http://127.0.0.1:8010',headless:true,channel:'chrome',launchOptions:{args:['--use-fake-ui-for-media-stream','--use-fake-device-for-media-stream']},screenshot:'only-on-failure'},projects:[{name:'desktop',use:{viewport:{width:1440,height:1000}}},{name:'mobile',use:{viewport:{width:390,height:844}}}]});

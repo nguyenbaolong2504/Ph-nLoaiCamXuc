@@ -1,0 +1,15 @@
+.env
+.venv/
+__pycache__/
+*.pyc
+frontend/node_modules/
+frontend/dist/
+models/*.onnx
+models/*.tflite
+data/
+ai/runs/
+.pytest_cache/
+playwright-report/
+test-results/
+*.log
+*.tsbuildinfo

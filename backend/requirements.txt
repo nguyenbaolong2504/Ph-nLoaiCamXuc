@@ -1,0 +1,10 @@
+fastapi==0.115.12
+uvicorn[standard]==0.34.2
+pymongo==4.12.1
+python-multipart==0.0.20
+numpy==1.26.4
+opencv-contrib-python==4.11.0.86
+mediapipe==0.10.21
+pillow==11.2.1
+pydantic-settings==2.9.1
+email-validator==2.2.0
