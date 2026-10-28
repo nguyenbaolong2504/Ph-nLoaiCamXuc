@@ -16,7 +16,7 @@ npm install
 npm run setup
 ```
 
-`setup` tự tìm Python 3.11, tạo `.venv` ở gốc, cài thư viện Python, tạo `.env` nếu chưa có và tải model pretrained có kiểm tra SHA-256. Không cần kích hoạt venv. Backend vẫn dùng Python để chạy AI; npm khởi động đúng Python trong venv.
+`setup` tự tìm Python 3.11, tạo `.venv` ở gốc, cài thư viện Python, tạo `.env` nếu chưa có và kiểm tra SHA-256 model pretrained. Hai model đã kèm trong Git nên clone/pull là có sẵn, không cần truy cập tên miền tải model khi file hợp lệ. Không cần kích hoạt venv. Backend vẫn dùng Python để chạy AI; npm khởi động đúng Python trong venv.
 
 Mở `.env` ở **thư mục gốc**, kiểm tra:
 
@@ -108,7 +108,7 @@ Ngưỡng mặc định 0.60 và margin 0.10 là cấu hình thử nghiệm. Cá
 - Face detection: **MediaPipe BlazeFace**.
 - Classifier sẵn có: **MobileFaceNet / Progressive Teacher của OpenCV Zoo**, Apache-2.0, 7 đầu ra.
 - Mã huấn luyện riêng: **CNN baseline, ResNet18, MobileNetV3-Small**, PyTorch.
-- Binary pretrained được kèm trong bản ZIP ban đầu, có SHA-256 trong `models/manifest.json`. Nếu clone Git, `npm run setup` tự tải và kiểm tra.
+- Hai binary pretrained được kèm trực tiếp trong Git, có SHA-256 trong `models/manifest.json`. `npm run models` trong backend kiểm tra offline; chỉ tải lại nếu file thiếu hoặc hỏng.
 - Không tự sinh nhãn khi model lỗi; `/api/health` trả trạng thái AI/MongoDB.
 
 **Chưa có kết quả nghiên cứu FER2013 của dự án.** Huấn luyện/đánh giá bộ dữ liệu thật là bước riêng và không được thay bằng kết quả smoke test. Đọc [hướng dẫn nghiên cứu](docs/NGHIEN_CUU.md) để thực hiện ba thí nghiệm.

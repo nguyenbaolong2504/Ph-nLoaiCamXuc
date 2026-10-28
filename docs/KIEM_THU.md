@@ -4,6 +4,7 @@ Ngày thực hiện: 28/10/2026.
 
 ## Bổ sung chế độ npm local
 
+- Hai file model pretrained được bổ sung vào Git để clone/pull không phụ thuộc DNS tên miền tải model. 3 kiểm thử xác nhận file hợp lệ không gọi mạng, file tải hỏng không thay file có sẵn và lỗi DNS có hướng dẫn lấy model từ Git.
 - Đã kiểm tra cú pháp Node bridge, Python runner, JSON package scripts và biến APP_PORT từ môi trường.
 - 4 kiểm thử subprocess thật đã pass: chuẩn bị dataset từ đường dẫn có dấu cách trong backend, kiểm tra path luôn tính từ gốc; truyền lỗi Python thành mã thoát khác 0; giữ nguyên `.env` có sẵn; chuyển `train --help` tới CLI PyTorch thật trong venv.
 - Không cài lại toàn bộ dependency hoặc chạy train dataset thật trong lần cập nhật này vì dung lượng máy còn hạn chế và chưa có dataset. Native startup với MongoDB và browser E2E vẫn cần xác minh trên máy đã cài đủ môi trường.

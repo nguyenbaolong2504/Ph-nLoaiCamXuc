@@ -3,6 +3,7 @@ import hashlib
 import json
 from pathlib import Path
 import urllib.request
+import urllib.error
 
 ROOT = Path(__file__).resolve().parents[1]
 COMMIT = "48b10fa505aeb51fbd127fc60a5c660040e823b7"
@@ -33,9 +34,14 @@ def download():
                 raise RuntimeError(f"Invalid model checksum: {name}")
             temporary.replace(path)
             manifest[name] = {"url": url, "sha256": digest, "bytes": path.stat().st_size}
+        except (urllib.error.URLError, TimeoutError) as exc:
+            raise RuntimeError(f"Khong tai duoc {name}. Hai model pretrained da kem trong Git; chay git pull o thu muc goc de lay model. Neu file da bi xoa, khoi phuc model tu Git. Chi can Internet khi model trong may bi thieu/hong.") from exc
         finally:
             temporary.unlink(missing_ok=True)
     manifest_file.write_text(json.dumps(manifest, indent=2) + "\n")
 
 if __name__ == "__main__":
-    download()
+    try:
+        download()
+    except (RuntimeError, OSError) as exc:
+        raise SystemExit(str(exc))

@@ -72,9 +72,12 @@ try {
     console.log('\nDa cai backend. Dat MONGO_URI trong .env, bat MongoDB, roi chay npm run dev.');
     console.log('Tai khoan quan tri va mat khau khoi tao: xem file .env o thu muc goc.');
   } else if (command === 'help' || command === '--help' || command === '-h') {
-    console.log('Trong backend: npm run setup | npm run dev | npm run setup:ai');
+    console.log('Trong backend: npm run setup | npm run dev | npm run models | npm run setup:ai');
     console.log('Train: npm run train -- --dataset data/datasets/fer2013 --model mobilenet_v3_small --output ai/runs/mobile-v1');
     console.log('Duong dan dataset/output tinh tu thu muc goc du an, ke ca khi go lenh trong backend.');
+  } else if (command === 'models') {
+    requireVenv();
+    await run(venvPython, [join(root, 'scripts/download_models.py')]);
   } else if (command === 'setup-ai') {
     requireVenv();
     await run(venvPython, ['-m', 'pip', 'install', '--disable-pip-version-check', '--no-cache-dir', '-r', join(root, 'ai/requirements.txt')]);

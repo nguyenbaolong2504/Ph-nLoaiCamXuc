@@ -6,6 +6,9 @@ node_modules/
 frontend/dist/
 models/*.onnx
 models/*.tflite
+!models/expression.onnx
+!models/face_detector.tflite
+models/*.download
 data/
 ai/runs/
 .pytest_cache/
